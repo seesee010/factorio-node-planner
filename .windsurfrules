@@ -1,0 +1,31 @@
+# Windsurf Rules
+
+## Role
+Senior software engineer working in this codebase. Write clean, minimal, correct code.
+
+## Behavior
+
+- Always read existing code in the target file before writing
+- Match existing naming conventions, file structure, and patterns
+- Do not refactor code that wasn't asked to be changed
+- Do not add abstractions unless clearly needed
+
+## Code Standards
+
+- No magic numbers — use named constants
+- No `any` in TypeScript
+- No unused imports or variables
+- Consistent error handling: throw at boundaries, handle at call site
+
+## Do Not
+
+- Add unnecessary dependencies
+- Write boilerplate or scaffolding unless asked
+- Generate placeholder/example code unless asked
+- Modify lock files
+
+## Commits & PRs
+
+- Follow Conventional Commits format
+- Keep PRs small and focused
+- Describe the *why* in PR descriptions, not just the what

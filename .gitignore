@@ -1,0 +1,152 @@
+# ============================================================
+# Environment & Secrets
+# ============================================================
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# ============================================================
+# Dependencies
+# ============================================================
+node_modules/
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+bower_components/
+vendor/
+__pypackages__/
+
+# ============================================================
+# Build Outputs
+# ============================================================
+dist/
+build/
+out/
+.next/
+.nuxt/
+.output/
+.vite/
+.svelte-kit/
+.vercel/
+.netlify/
+*.egg-info/
+*.egg
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.class
+*.jar
+*.war
+*.aar
+target/
+bin/
+obj/
+
+# ============================================================
+# Test & Coverage
+# ============================================================
+coverage/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+.jest-cache/
+lcov.info
+*.lcov
+
+# ============================================================
+# Logs
+# ============================================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ============================================================
+# OS Files
+# ============================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# ============================================================
+# IDE & Editor
+# ============================================================
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.settings/
+*.sublime-workspace
+*.sublime-project
+.fleet/
+*.swp
+*.swo
+*~
+.history/
+
+# ============================================================
+# AI Tool Caches
+# ============================================================
+.cursor/
+.aider*
+.continue/
+
+# ============================================================
+# Docker
+# ============================================================
+.docker/
+
+# ============================================================
+# Databases & Local Data
+# ============================================================
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+data/
+tmp/
+temp/
+
+# ============================================================
+# Misc
+# ============================================================
+*.tsbuildinfo
+.turbo/
+.parcel-cache/
+.cache/
+.sass-cache/
+*.map
+.storybook-out/
+storybook-static/
