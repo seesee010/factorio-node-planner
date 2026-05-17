@@ -96,7 +96,7 @@ export default function Graph({
             if (!start) return
             let nx = start.x + dx / s
             let ny = start.y + dy / s
-            if (settings?.snap !== false) {
+            if (settings?.snap) {
               const snapGrid = 22
               nx = Math.round(nx / snapGrid) * snapGrid
               ny = Math.round(ny / snapGrid) * snapGrid

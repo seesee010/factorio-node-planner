@@ -6,8 +6,8 @@ import { ITEM_COLORS, ITEM_LABELS, STATE_STROKE, FurnaceIcon, SourceIcon, Output
 
 function NodeCard({ node, selected, onMouseDown, onDoubleClick, onSocketClick }) {
   const height = nodeCardHeight(node)
-  const errored = node.state === 'error'
-  const warned  = node.state === 'warning'
+  const errored = node.status === 'error'
+  const warned  = node.status === 'warning'
 
   const borderColor = selected ? '#5878c8' : (errored ? '#501818' : '#2a2a2a')
   const borderW     = selected ? 1.5 : 1
