@@ -1,5 +1,5 @@
 import { h, Fragment } from 'https://esm.sh/preact@10'
-import { useState } from 'https://esm.sh/preact@10/hooks'
+import { useState, useRef, useEffect, useCallback } from 'https://esm.sh/preact@10/hooks'
 import htm from 'https://esm.sh/htm@3'
 const html = htm.bind(h)
 
@@ -65,6 +65,74 @@ function KV({ k, v, vColor }) {
 // Sidebar (default export)
 // ---------------------------------------------------------------------------
 
+const GOAL_ITEMS = [
+  { id: 'iron-plate',    label: 'IRON PLATES',    color: '#687080' },
+  { id: 'copper-plate',  label: 'COPPER PLATES',  color: '#b87333' },
+  { id: 'green-circuit', label: 'GREEN CIRCUITS', color: '#3a7a3a' },
+  { id: 'gear',          label: 'GEARS',          color: '#8a8060' },
+]
+
+function GoalPanel({ flow }) {
+  const [goalIdx, setGoalIdx] = useState(0)
+  const goal = GOAL_ITEMS[goalIdx]
+  return html`
+    <div style=${{
+      borderBottom: '1px solid #1e1e1e',
+      padding: '12px 14px',
+    }}>
+      <div style=${{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+      }}>
+        <span style=${{
+          fontFamily: 'JetBrains Mono, monospace',
+          fontSize: 10,
+          color: '#383838',
+          textTransform: 'uppercase',
+          letterSpacing: '0.12em',
+        }}>Goal</span>
+        <div style=${{ display: 'flex', gap: 3 }}>
+          ${GOAL_ITEMS.map((item, i) => html`
+            <div
+              key=${item.id}
+              onClick=${() => setGoalIdx(i)}
+              style=${{
+                width: 8, height: 8,
+                background: i === goalIdx ? item.color : '#2a2a2a',
+                cursor: 'pointer',
+              }}
+            />
+          `)}
+        </div>
+      </div>
+      <div style=${{
+        fontFamily: 'JetBrains Mono, monospace',
+        fontSize: 11,
+        color: goal.color,
+        letterSpacing: '0.06em',
+        marginBottom: 2,
+      }}>${goal.label}</div>
+      <div style=${{
+        fontFamily: 'JetBrains Mono, monospace',
+        fontSize: 18,
+        color: '#e6e6e6',
+        lineHeight: 1.1,
+      }}>${flow.platesOut}<span style=${{ fontSize: 10, color: '#4a4a4a', marginLeft: 4 }}>/min</span></div>
+      <div style=${{
+        fontFamily: 'JetBrains Mono, monospace',
+        fontSize: 9.5,
+        color: '#4a4a4a',
+        marginTop: 3,
+      }}>efficiency ${flow.efficiency}%</div>
+    </div>
+  `
+}
+
+const MIN_W = 150
+const MAX_W = 380
+
 export default function Sidebar({
   selectedNode,
   errorNodes,
@@ -77,19 +145,47 @@ export default function Sidebar({
   nodeCount = 0,
   edgeCount = 0,
 }) {
+  const [width, setWidth] = useState(220)
+  const dragRef = useRef(null)
+
+  useEffect(() => {
+    const onMove = (e) => {
+      if (!dragRef.current) return
+      const dx = dragRef.current.startX - e.clientX
+      const newW = Math.max(MIN_W, Math.min(MAX_W, dragRef.current.startW + dx))
+      setWidth(newW)
+    }
+    const onUp = () => { dragRef.current = null }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp) }
+  }, [])
+
   return html`
     <div style=${{
       position: 'absolute',
       top: 0,
       right: 0,
       bottom: 0,
-      width: 188,
+      width,
       background: '#121212',
       borderLeft: '1px solid #1e1e1e',
       display: 'flex',
       flexDirection: 'column',
       zIndex: 5,
     }}>
+
+      <!-- Resize handle -->
+      <div
+        onMouseDown=${(e) => { e.preventDefault(); dragRef.current = { startX: e.clientX, startW: width } }}
+        style=${{
+          position: 'absolute',
+          left: 0, top: 0, bottom: 0,
+          width: 4,
+          cursor: 'col-resize',
+          zIndex: 10,
+        }}
+      />
 
       <!-- Title bar -->
       <div style=${{
@@ -113,6 +209,9 @@ export default function Sidebar({
 
       <!-- Scrollable content -->
       <div style=${{ flex: 1, overflowY: 'auto' }}>
+
+        <!-- Goal item panel -->
+        <${GoalPanel} flow=${flow} />
 
         <!-- Source output section -->
         <${Section} title="Source output">
@@ -244,20 +343,26 @@ export default function Sidebar({
                 color: '#3a9c3a',
               }}>all flows ok</div>
             `
-            : errorNodes.map(node => html`
+            : errorNodes.map(node => {
+              const issueText = typeof node.issue === 'string' ? node.issue : (node.issue?.message || '')
+              return html`
               <div key=${node.id} style=${{
                 display: 'flex',
                 gap: 8,
                 marginBottom: 8,
               }}>
-                <span style=${{
-                  fontFamily: 'JetBrains Mono, monospace',
-                  fontWeight: 700,
-                  fontSize: 12,
-                  lineHeight: '14px',
-                  color: node.status === 'error' ? '#cc1c1c' : '#aa7010',
-                  flexShrink: 0,
-                }}>!</span>
+                <span
+                  title=${issueText}
+                  style=${{
+                    fontFamily: 'JetBrains Mono, monospace',
+                    fontWeight: 700,
+                    fontSize: 12,
+                    lineHeight: '14px',
+                    color: node.status === 'error' ? '#cc1c1c' : '#aa7010',
+                    flexShrink: 0,
+                    cursor: 'help',
+                  }}
+                >!</span>
                 <div>
                   <div style=${{
                     fontFamily: 'JetBrains Mono, monospace',
@@ -270,10 +375,10 @@ export default function Sidebar({
                     color: '#5a5a5a',
                     marginTop: 1,
                     lineHeight: 1.35,
-                  }}>${typeof node.issue === 'string' ? node.issue : (node.issue?.message || '')}</div>
+                  }}>${issueText}</div>
                 </div>
               </div>
-            `)
+            `})
           }
         </${Section}>
 
