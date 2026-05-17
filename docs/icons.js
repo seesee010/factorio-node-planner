@@ -24,12 +24,14 @@ export const STATE_STROKE = {
   ok:      '#2a8c2a',
   warning: '#cc6820',
   error:   '#cc2828',
+  idle:    '#363636',
 }
 
 export const STATE_LABEL_FG = {
   ok:      '#7ec27e',
   warning: '#e0a060',
   error:   '#e87878',
+  idle:    '#4a4a4a',
 }
 
 export function SourceIcon({ size = 22, color = '#8a8060' }) {

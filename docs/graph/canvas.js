@@ -29,6 +29,7 @@ export default function Graph({
   const [mouse, setMouse] = useState({ x: 0, y: 0, inside: false })
   const [marquee, setMarquee] = useState(null)
   const [wireState, setWireState] = useState(null)
+  const [hoveredSocket, setHoveredSocket] = useState(null)
 
   // View sync effect
   useEffect(() => {
@@ -178,17 +179,40 @@ export default function Graph({
     return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [!!wireState])
 
-  const handleSocketClick = useCallback((nodeId, side, index) => {
-    if (activeTool !== 'wire') return
-    if (side === 'in' && wireState) {
-      // complete wire
-      onAddEdge && onAddEdge(wireState.fromNodeId, wireState.fromSocket, nodeId, index)
-      setWireState(null)
-    } else if (side === 'out' && !wireState) {
-      // start wire
-      setWireState({ fromNodeId: nodeId, fromSocket: index, toX: 0, toY: 0 })
+  // ESC cancels wire drawing
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') setWireState(null)
     }
-  }, [activeTool, wireState, onAddEdge])
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  const handleSocketClick = useCallback((nodeId, side, index) => {
+    // Works in select AND wire modes — clicking a socket is always meaningful
+    if (activeTool !== 'wire' && activeTool !== 'select') return
+
+    if (!wireState) {
+      if (side !== 'out') return  // can only start wire from output socket
+      const srcNode = nodes.find(n => n.id === nodeId)
+      if (!srcNode) return
+      const pos = socketPos(srcNode, 'out', index)
+      setWireState({ fromNodeId: nodeId, fromSocket: index, toX: pos.x, toY: pos.y })
+    } else {
+      if (side === 'in' && nodeId !== wireState.fromNodeId) {
+        // valid completion
+        onAddEdge && onAddEdge(wireState.fromNodeId, wireState.fromSocket, nodeId, index)
+        setWireState(null)
+      } else if (side === 'out') {
+        // restart wire from new output
+        const srcNode = nodes.find(n => n.id === nodeId)
+        if (!srcNode) return
+        const pos = socketPos(srcNode, 'out', index)
+        setWireState({ fromNodeId: nodeId, fromSocket: index, toX: pos.x, toY: pos.y })
+      }
+      // side==='in' on same node = ignore (invalid self-loop)
+    }
+  }, [activeTool, wireState, onAddEdge, nodes])
 
   const onMouseDownBg = useCallback((e) => {
     if (e.target !== e.currentTarget && e.target.tagName !== 'svg' && e.target.tagName !== 'rect') {
@@ -365,6 +389,10 @@ export default function Graph({
               onMouseDown=${onNodeMouseDown}
               onDoubleClick=${onNodeDoubleClickInternal}
               onSocketClick=${handleSocketClick}
+              onSocketEnter=${(nodeId, side, index) => setHoveredSocket({ nodeId, side, index })}
+              onSocketLeave=${() => setHoveredSocket(null)}
+              wireActive=${!!wireState}
+              wireSourceId=${wireState?.fromNodeId}
             />
           `)}
 
@@ -378,6 +406,7 @@ export default function Graph({
               fromSocket=${wireState.fromSocket}
               toX=${wireState.toX}
               toY=${wireState.toY}
+              valid=${!hoveredSocket || (hoveredSocket.side === 'in' && hoveredSocket.nodeId !== wireState.fromNodeId)}
             />
           ` : null}
 

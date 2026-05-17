@@ -46,13 +46,13 @@ export function EdgeView({ edge, nodes, showLabel = true }) {
   `
 }
 
-export function WireGhost({ fromNode, fromSocket, toX, toY }) {
+export function WireGhost({ fromNode, fromSocket, toX, toY, valid = true }) {
   const from = socketPos(fromNode, 'out', fromSocket)
   const d = bezierPath(from.x, from.y, toX, toY)
   return html`
     <path
       d=${d}
-      stroke="#5878c8"
+      stroke=${valid ? '#5878c8' : '#cc2828'}
       stroke-width="1.5"
       stroke-dasharray="4 3"
       fill="none"

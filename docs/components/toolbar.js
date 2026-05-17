@@ -532,25 +532,25 @@ export default function Toolbar({
       <${ToolButton}
         iconKey="node"
         label="add node"
-        shortcut="N"
-        active=${activeTool === 'node'}
-        onClick=${() => setTool('node')}
+        shortcut="A"
+        active=${activeTool === 'add-node'}
+        onClick=${() => setTool('add-node')}
         orientation=${orientation}
       />
       <${ToolButton}
         iconKey="splitter"
         label="add splitter"
         shortcut="S"
-        active=${activeTool === 'splitter'}
-        onClick=${() => setTool('splitter')}
+        active=${activeTool === 'add-splitter'}
+        onClick=${() => setTool('add-splitter')}
         orientation=${orientation}
       />
       <${ToolButton}
         iconKey="merger"
         label="add merger"
         shortcut="M"
-        active=${activeTool === 'merger'}
-        onClick=${() => setTool('merger')}
+        active=${activeTool === 'add-merger'}
+        onClick=${() => setTool('add-merger')}
         orientation=${orientation}
       />
 

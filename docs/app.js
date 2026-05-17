@@ -92,10 +92,21 @@ function App() {
   }, [nodes, edges])
 
   // computeFlow (memoized)
-  const { nodes: flowNodes, edges: flowEdges } = useMemo(
+  const { nodes: rawFlowNodes, edges: flowEdges } = useMemo(
     () => computeFlow(nodes, edges),
     [nodes, edges]
   )
+
+  // Mark unconnected sockets as idle (gray)
+  const flowNodes = useMemo(() => {
+    const toSet   = new Set(flowEdges.map(e => `${e.to.nodeId}:${e.to.socket}`))
+    const fromSet = new Set(flowEdges.map(e => `${e.from.nodeId}:${e.from.socket}`))
+    return rawFlowNodes.map(n => ({
+      ...n,
+      inputs:  n.inputs?.map((s, i)  => ({ ...s, flowState: toSet.has(`${n.id}:${i}`)   ? s.flowState : 'idle' })),
+      outputs: n.outputs?.map((s, i) => ({ ...s, flowState: fromSet.has(`${n.id}:${i}`) ? s.flowState : 'idle' })),
+    }))
+  }, [rawFlowNodes, flowEdges])
 
   // Derived: selected node with throughputIn/Out computed from edge values
   const selectedNode = useMemo(() => {
@@ -284,7 +295,7 @@ function App() {
       switch (e.key) {
         case 'v': case 'V': setActiveTool('select'); break
         case 'h': case 'H': setActiveTool('pan'); break
-        case 'n': case 'N': if (!e.metaKey && !e.ctrlKey) setActiveTool('add-node'); break
+        case 'a': case 'A': if (!e.metaKey && !e.ctrlKey) setActiveTool('add-node'); break
         case 's': case 'S': if (!e.metaKey && !e.ctrlKey) setActiveTool('add-splitter'); break
         case 'm': case 'M': if (!e.metaKey && !e.ctrlKey) setActiveTool('add-merger'); break
         case 'c': case 'C': setActiveTool('wire'); break

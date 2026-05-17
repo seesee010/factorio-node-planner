@@ -11,7 +11,7 @@ const TYPE_ICONS = {
   output:    OutputIcon,
 }
 
-function NodeCard({ node, selected, onMouseDown, onDoubleClick, onSocketClick }) {
+function NodeCard({ node, selected, onMouseDown, onDoubleClick, onSocketClick, onSocketEnter, onSocketLeave, wireActive, wireSourceId }) {
   const height = nodeCardHeight(node)
   const errored = node.status === 'error'
   const warned  = node.status === 'warning'
@@ -76,17 +76,19 @@ function NodeCard({ node, selected, onMouseDown, onDoubleClick, onSocketClick })
 
       ${inputs.map((sock, i) => {
         const local = getSocketLocal(node, 'in', i)
-        const strokeColor = STATE_STROKE[sock.flowState] || STATE_STROKE.ok
-        const itemColor   = ITEM_COLORS[sock.item] || '#666'
+        const strokeColor = STATE_STROKE[sock.flowState] || STATE_STROKE.idle
+        const itemColor   = ITEM_COLORS[sock.item] || '#555'
         const label       = ITEM_LABELS[sock.item] || sock.item || ''
+        const isTarget    = wireActive && wireSourceId !== node.id
         return html`
           <g key=${i}>
+            ${isTarget && html`<circle cx=${local.x} cy=${local.y} r="8" fill="none" stroke="#5878c8" stroke-width="1" opacity="0.4" />`}
             <circle
               cx=${local.x}
               cy=${local.y}
               r=${SOCKET_R}
               fill="#141414"
-              stroke=${strokeColor}
+              stroke=${isTarget ? '#5878c8' : strokeColor}
               stroke-width="1.5"
             />
             <circle cx=${local.x} cy=${local.y} r="1.5" fill=${itemColor} />
@@ -102,7 +104,10 @@ function NodeCard({ node, selected, onMouseDown, onDoubleClick, onSocketClick })
               cy=${local.y}
               r="10"
               fill="transparent"
-              onClick=${onSocketClick ? (e) => { e.stopPropagation(); onSocketClick(node.id, 'in', i) } : null}
+              style="cursor: crosshair;"
+              onClick=${(e) => { e.stopPropagation(); onSocketClick && onSocketClick(node.id, 'in', i) }}
+              onMouseEnter=${() => onSocketEnter && onSocketEnter(node.id, 'in', i)}
+              onMouseLeave=${() => onSocketLeave && onSocketLeave()}
             />
           </g>
         `
@@ -110,8 +115,8 @@ function NodeCard({ node, selected, onMouseDown, onDoubleClick, onSocketClick })
 
       ${outputs.map((sock, i) => {
         const local = getSocketLocal(node, 'out', i)
-        const strokeColor = STATE_STROKE[sock.flowState] || STATE_STROKE.ok
-        const itemColor   = ITEM_COLORS[sock.item] || '#666'
+        const strokeColor = STATE_STROKE[sock.flowState] || STATE_STROKE.idle
+        const itemColor   = ITEM_COLORS[sock.item] || '#555'
         const label       = ITEM_LABELS[sock.item] || sock.item || ''
         return html`
           <g key=${i}>
@@ -137,7 +142,10 @@ function NodeCard({ node, selected, onMouseDown, onDoubleClick, onSocketClick })
               cy=${local.y}
               r="10"
               fill="transparent"
-              onClick=${onSocketClick ? (e) => { e.stopPropagation(); onSocketClick(node.id, 'out', i) } : null}
+              style="cursor: crosshair;"
+              onClick=${(e) => { e.stopPropagation(); onSocketClick && onSocketClick(node.id, 'out', i) }}
+              onMouseEnter=${() => onSocketEnter && onSocketEnter(node.id, 'out', i)}
+              onMouseLeave=${() => onSocketLeave && onSocketLeave()}
             />
           </g>
         `
@@ -158,7 +166,7 @@ function NodeCard({ node, selected, onMouseDown, onDoubleClick, onSocketClick })
   `
 }
 
-function NodeJunction({ node, selected, onMouseDown, onDoubleClick, onSocketClick }) {
+function NodeJunction({ node, selected, onMouseDown, onDoubleClick, onSocketClick, onSocketEnter, onSocketLeave, wireActive, wireSourceId }) {
   const W = JUNCTION_W
   const H = JUNCTION_H
   const isSplitter = node.type === 'splitter'
@@ -198,52 +206,38 @@ function NodeJunction({ node, selected, onMouseDown, onDoubleClick, onSocketClic
       >${isSplitter ? 'SPLIT' : 'MERGE'}</text>
 
       ${inputs.map((sock, i) => {
-        const local = getSocketLocal(node, 'in', i)
-        const strokeColor = STATE_STROKE[sock.flowState] || STATE_STROKE.ok
-        const itemColor   = ITEM_COLORS[sock.item] || '#666'
+        const local      = getSocketLocal(node, 'in', i)
+        const strokeColor = STATE_STROKE[sock.flowState] || STATE_STROKE.idle
+        const itemColor  = ITEM_COLORS[sock.item] || '#555'
+        const isTarget   = wireActive && wireSourceId !== node.id
         return html`
           <g key=${i}>
-            <circle
-              cx=${local.x}
-              cy=${local.y}
-              r=${SOCKET_R}
-              fill="#141414"
-              stroke=${strokeColor}
-              stroke-width="1.5"
-            />
+            ${isTarget && html`<circle cx=${local.x} cy=${local.y} r="8" fill="none" stroke="#5878c8" stroke-width="1" opacity="0.4" />`}
+            <circle cx=${local.x} cy=${local.y} r=${SOCKET_R} fill="#141414"
+              stroke=${isTarget ? '#5878c8' : strokeColor} stroke-width="1.5" />
             <circle cx=${local.x} cy=${local.y} r="1.5" fill=${itemColor} />
-            <circle
-              cx=${local.x}
-              cy=${local.y}
-              r="10"
-              fill="transparent"
-              onClick=${onSocketClick ? (e) => { e.stopPropagation(); onSocketClick(node.id, 'in', i) } : null}
+            <circle cx=${local.x} cy=${local.y} r="10" fill="transparent" style="cursor: crosshair;"
+              onClick=${(e) => { e.stopPropagation(); onSocketClick && onSocketClick(node.id, 'in', i) }}
+              onMouseEnter=${() => onSocketEnter && onSocketEnter(node.id, 'in', i)}
+              onMouseLeave=${() => onSocketLeave && onSocketLeave()}
             />
           </g>
         `
       })}
 
       ${outputs.map((sock, i) => {
-        const local = getSocketLocal(node, 'out', i)
-        const strokeColor = STATE_STROKE[sock.flowState] || STATE_STROKE.ok
-        const itemColor   = ITEM_COLORS[sock.item] || '#666'
+        const local      = getSocketLocal(node, 'out', i)
+        const strokeColor = STATE_STROKE[sock.flowState] || STATE_STROKE.idle
+        const itemColor  = ITEM_COLORS[sock.item] || '#555'
         return html`
           <g key=${i}>
-            <circle
-              cx=${local.x}
-              cy=${local.y}
-              r=${SOCKET_R}
-              fill="#141414"
-              stroke=${strokeColor}
-              stroke-width="1.5"
-            />
+            <circle cx=${local.x} cy=${local.y} r=${SOCKET_R} fill="#141414"
+              stroke=${strokeColor} stroke-width="1.5" />
             <circle cx=${local.x} cy=${local.y} r="1.5" fill=${itemColor} />
-            <circle
-              cx=${local.x}
-              cy=${local.y}
-              r="10"
-              fill="transparent"
-              onClick=${onSocketClick ? (e) => { e.stopPropagation(); onSocketClick(node.id, 'out', i) } : null}
+            <circle cx=${local.x} cy=${local.y} r="10" fill="transparent" style="cursor: crosshair;"
+              onClick=${(e) => { e.stopPropagation(); onSocketClick && onSocketClick(node.id, 'out', i) }}
+              onMouseEnter=${() => onSocketEnter && onSocketEnter(node.id, 'out', i)}
+              onMouseLeave=${() => onSocketLeave && onSocketLeave()}
             />
           </g>
         `
