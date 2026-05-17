@@ -4,10 +4,19 @@ const html = htm.bind(h)
 import { getSocketLocal, nodeCardHeight, NODE_WIDTH, HEADER_H, SOCKET_ROW_H, BODY_PAD_Y, SOCKET_R, JUNCTION_W, JUNCTION_H } from './geometry.js'
 import { ITEM_COLORS, ITEM_LABELS, STATE_STROKE, FurnaceIcon, SourceIcon, OutputIcon, UnconfiguredIcon, AssemblerIcon, BadgeBang } from '../icons.js'
 
+const TYPE_ICONS = {
+  source:    SourceIcon,
+  furnace:   FurnaceIcon,
+  assembler: AssemblerIcon,
+  output:    OutputIcon,
+}
+
 function NodeCard({ node, selected, onMouseDown, onDoubleClick, onSocketClick }) {
   const height = nodeCardHeight(node)
   const errored = node.status === 'error'
   const warned  = node.status === 'warning'
+
+  const Icon = node.icon || TYPE_ICONS[node.type] || UnconfiguredIcon
 
   const borderColor = selected ? '#5878c8' : (errored ? '#501818' : '#2a2a2a')
   const borderW     = selected ? 1.5 : 1
@@ -38,7 +47,7 @@ function NodeCard({ node, selected, onMouseDown, onDoubleClick, onSocketClick })
       <line x1="0" y1=${HEADER_H} x2=${NODE_WIDTH} y2=${HEADER_H} stroke="#262626" stroke-width="1" />
 
       <g transform=${`translate(12, ${HEADER_H / 2 - 11})`}>
-        ${node.icon ? html`<${node.icon} size=${22} />` : null}
+        <${Icon} size=${22} />
       </g>
 
       <text

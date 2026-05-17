@@ -208,7 +208,7 @@ function RailDivider({ orientation = 'left' }) {
 // MenuFlyout
 // ---------------------------------------------------------------------------
 
-function MenuFlyout({ orientation, onClose }) {
+function MenuFlyout({ orientation, onClose, onNew, onSave, onExportURL }) {
   const isLeft = orientation === 'left'
 
   const posStyle = isLeft
@@ -260,24 +260,17 @@ function MenuFlyout({ orientation, onClose }) {
     {
       title: 'File',
       items: [
-        { label: 'new graph',    kbd: '⌘N' },
-        { label: 'open…',        kbd: '⌘O' },
-        { label: 'save',         kbd: '⌘S' },
-        { label: 'save as…',     kbd: '⇧⌘S' },
-      ],
-    },
-    {
-      title: 'Export',
-      items: [
-        { label: 'export as svg…' },
-        { label: 'export as json…' },
+        { label: 'new graph',    kbd: '⌘N', action: onNew },
+        { label: 'save as json', kbd: '⌘S', action: onSave },
+        { label: 'copy URL',     kbd: '⌘E', action: onExportURL },
       ],
     },
     {
       title: 'Help',
       items: [
-        { label: 'keyboard shortcuts', kbd: '?' },
-        { label: 'about', dimmed: true },
+        { label: 'V select · H pan · C wire', dimmed: true },
+        { label: 'N node · S split · M merge', dimmed: true },
+        { label: 'Del delete · dbl-click config', dimmed: true },
       ],
     },
   ]
@@ -299,8 +292,8 @@ function MenuFlyout({ orientation, onClose }) {
         fontFamily: 'JetBrains Mono, monospace',
       }}>
         <div style=${{ padding: '10px 12px 8px', borderBottom: '1px solid #1e1e1e' }}>
-          <div style=${{ fontSize: 11, color: '#c8c8c8', letterSpacing: '0.08em' }}>FLOW.001</div>
-          <div style=${{ fontSize: 9.5, color: '#4a4a4a', marginTop: 3, letterSpacing: '0.04em' }}>iron plate line · unsaved</div>
+          <div style=${{ fontSize: 11, color: '#c8c8c8', letterSpacing: '0.08em' }}>FACTORIO-FLOW</div>
+          <div style=${{ fontSize: 9.5, color: '#4a4a4a', marginTop: 3, letterSpacing: '0.04em' }}>⌘S save · ⌘Z undo</div>
         </div>
         ${sections.map((section, si) => html`
           <div key=${section.title}>
@@ -316,7 +309,7 @@ function MenuFlyout({ orientation, onClose }) {
                 }}
                 onMouseEnter=${() => !item.dimmed && setHovered(`${si}-${ii}`)}
                 onMouseLeave=${() => setHovered(null)}
-                onClick=${item.dimmed ? undefined : onClose}
+                onClick=${item.dimmed ? undefined : () => { item.action?.(); onClose() }}
               >
                 <span>${item.label}</span>
                 ${item.kbd && html`<span style=${kbdStyle}>${item.kbd}</span>`}
@@ -470,6 +463,9 @@ export default function Toolbar({
   errorCount,
   settings,
   setSettings,
+  onNew,
+  onSave,
+  onExportURL,
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -494,7 +490,7 @@ export default function Toolbar({
 
   return html`
     <div style=${containerStyle}>
-      ${menuOpen && html`<${MenuFlyout} orientation=${orientation} onClose=${() => setMenuOpen(false)} />`}
+      ${menuOpen && html`<${MenuFlyout} orientation=${orientation} onClose=${() => setMenuOpen(false)} onNew=${onNew} onSave=${onSave} onExportURL=${onExportURL} />`}
       ${settingsOpen && html`<${SettingsFlyout}
         orientation=${orientation}
         settings=${settings}

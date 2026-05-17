@@ -74,6 +74,8 @@ export default function Sidebar({
   scale,
   onResetView,
   multiSelectCount = 0,
+  nodeCount = 0,
+  edgeCount = 0,
 }) {
   return html`
     <div style=${{
@@ -99,14 +101,14 @@ export default function Sidebar({
           fontSize: 11,
           color: '#c8c8c8',
           letterSpacing: '0.08em',
-        }}>FLOW.001</div>
+        }}>FACTORIO-FLOW</div>
         <div style=${{
           fontFamily: 'JetBrains Mono, monospace',
           fontSize: 9.5,
           color: '#4a4a4a',
           marginTop: 3,
           letterSpacing: '0.04em',
-        }}>iron plate line</div>
+        }}>${nodeCount} nodes · ${edgeCount} edges</div>
       </div>
 
       <!-- Scrollable content -->
@@ -137,7 +139,7 @@ export default function Sidebar({
             max="480"
             step="60"
             value=${sourceOutput}
-            onChange=${(e) => setSourceOutput(Number(e.target.value))}
+            onInput=${(e) => setSourceOutput(Number(e.target.value))}
             style=${{ width: '100%', accentColor: '#5878c8' }}
           />
           <div style=${{
@@ -169,7 +171,7 @@ export default function Sidebar({
                   fontFamily: 'JetBrains Mono, monospace',
                   fontSize: 9.5,
                   color: '#4a4a4a',
-                }}>press ⌫ to delete</div>
+                }}>press ⌫ to delete · dbl-click to config</div>
               </div>
             `
             : selectedNode
@@ -188,29 +190,36 @@ export default function Sidebar({
                     marginBottom: 10,
                   }}>#${selectedNode.id} · ${selectedNode.type}</div>
 
-                  ${selectedNode.recipe && html`<${KV} k="recipe" v=${selectedNode.recipe} />`}
-                  ${selectedNode.efficiency !== undefined && html`
+                  ${selectedNode.throughput != null && html`
+                    <${KV} k="throughput" v=${selectedNode.throughput + '/m'} />
+                  `}
+                  ${selectedNode.throughputIn != null && selectedNode.type !== 'source' && html`
+                    <${KV} k="in" v=${selectedNode.throughputIn + '/m'} />
+                  `}
+                  ${selectedNode.throughputOut != null && selectedNode.type !== 'output' && html`
+                    <${KV} k="out" v=${selectedNode.throughputOut + '/m'} />
+                  `}
+                  ${selectedNode.efficiency != null && html`
                     <${KV}
                       k="efficiency"
-                      v=${selectedNode.efficiency + '%'}
+                      v=${Math.round(selectedNode.efficiency) + '%'}
                       vColor=${selectedNode.efficiency < 100 ? '#cc6820' : '#3a9c3a'}
                     />
                   `}
-                  ${selectedNode.throughputIn !== undefined && html`<${KV} k="in" v=${selectedNode.throughputIn + '/min'} />`}
-                  ${selectedNode.throughputOut !== undefined && html`<${KV} k="out" v=${selectedNode.throughputOut + '/min'} />`}
+                  ${selectedNode.recipe && html`<${KV} k="recipe" v=${selectedNode.recipe} />`}
 
                   ${selectedNode.issue && html`
                     <div style=${{
                       marginTop: 10,
                       padding: '7px 8px',
                       background: selectedNode.issue.severity === 'error' ? '#1f0c0c' : '#1f1808',
-                      borderLeft: '2px solid ' + (selectedNode.issue.severity === 'error' ? '#cc1c1c' : '#aa7010'),
+                      borderLeft: '2px solid ' + (selectedNode.status === 'error' ? '#cc1c1c' : '#aa7010'),
                       fontFamily: 'JetBrains Mono, monospace',
                       fontSize: 10,
                       color: '#c8c8c8',
                       lineHeight: 1.4,
                     }}>
-                      ${selectedNode.issue.message}
+                      ${typeof selectedNode.issue === 'string' ? selectedNode.issue : selectedNode.issue.message}
                     </div>
                   `}
                 </div>
@@ -246,7 +255,7 @@ export default function Sidebar({
                   fontWeight: 700,
                   fontSize: 12,
                   lineHeight: '14px',
-                  color: node.issue && node.issue.severity === 'error' ? '#cc1c1c' : '#aa7010',
+                  color: node.status === 'error' ? '#cc1c1c' : '#aa7010',
                   flexShrink: 0,
                 }}>!</span>
                 <div>
@@ -261,7 +270,7 @@ export default function Sidebar({
                     color: '#5a5a5a',
                     marginTop: 1,
                     lineHeight: 1.35,
-                  }}>${node.issue ? node.issue.message : ''}</div>
+                  }}>${typeof node.issue === 'string' ? node.issue : (node.issue?.message || '')}</div>
                 </div>
               </div>
             `)
@@ -270,8 +279,8 @@ export default function Sidebar({
 
         <!-- Flow section -->
         <${Section} title="Flow">
-          <${KV} k="ore in" v=${flow.oreIn + '/min'} />
-          <${KV} k="plates out" v=${flow.platesOut + '/min'} />
+          <${KV} k="ore in"    v=${flow.oreIn + '/m'} />
+          <${KV} k="plates out" v=${flow.platesOut + '/m'} />
           <${KV}
             k="efficiency"
             v=${flow.efficiency + '%'}
