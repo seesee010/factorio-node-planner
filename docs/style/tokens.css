@@ -1,0 +1,84 @@
+/* factorio-flow — Design Tokens
+   All CSS custom properties for the entire design system.
+   Import this file first before any other stylesheet. */
+
+:root {
+  /* ── Backgrounds ─────────────────────────────────────── */
+  --bg-root: #0f0f0f;
+  --bg-canvas: #161616;
+  --bg-rail: #121212;
+  --bg-topbar: rgba(15, 15, 15, 0.92);
+  --bg-node: #1c1c1c;
+  --bg-node-header-furnace: #181408;
+  --bg-node-header-junction: #12142a;
+  --bg-node-header-source: #182210;
+  --bg-node-header-output: #0c1e12;
+  --bg-node-header-unconf: #1a1a1a;
+  --bg-flyout: #101010;
+  --bg-flyout-tabs: #0c0c0c;
+  --bg-btn-active: #191919;
+  --bg-btn-hover: #161616;
+  --bg-tooltip: #0a0a0a;
+  --bg-error-panel: #1f0c0c;
+  --bg-warning-panel: #1f1808;
+  --bg-item-card: #141414;
+  --bg-item-hover: #181818;
+
+  /* ── Borders ─────────────────────────────────────────── */
+  --border-panel: #1e1e1e;
+  --border-node: #2a2a2a;
+  --border-node-error: #501818;
+  --border-node-sel: #5878c8;
+  --border-subtle: #262626;
+  --border-faint: #202020;
+
+  /* ── Text ────────────────────────────────────────────── */
+  --text-bright: #e6e6e6;
+  --text-normal: #c8c8c8;
+  --text-socket: #b0b0b0;
+  --text-mid: #7a7a7a;
+  --text-dim: #6a6a6a;
+  --text-faint: #5a5a5a;
+  --text-ghost: #4a4a4a;
+  --text-invisible: #3a3a3a;
+  --text-dead: #383838;
+  --text-disabled: #333333;
+
+  /* ── State Colors ────────────────────────────────────── */
+  --state-ok-edge: #2a8c2a;
+  --state-ok-text: #3a9c3a;
+  --state-ok-label: #7ec27e;
+  --state-err-edge: #cc2828;
+  --state-err-badge: #cc1c1c;
+  --state-err-label: #e87878;
+  --state-warn-edge: #cc6820;
+  --state-warn-badge: #aa7010;
+  --state-warn-label: #e0a060;
+
+  /* ── Accent ──────────────────────────────────────────── */
+  --accent: #5878c8;
+
+  /* ── Item Colors (socket dots) ───────────────────────── */
+  --item-iron-ore: #a85e24;
+  --item-iron-plate: #687080;
+  --item-copper-ore: #8B4513;
+  --item-copper-plate: #b87333;
+  --item-green-circuit: #3a7a3a;
+  --item-gear: #8a8060;
+  --item-unknown: #666666;
+
+  /* ── Dimensions ──────────────────────────────────────── */
+  --rail-w: 52px;
+  --btn-h: 40px;
+  --topbar-h: 36px;
+  --sidebar-w: 188px;
+  --inspector-w: 280px;
+  --node-w: 220px;
+  --header-h: 44px;
+  --socket-row-h: 28px;
+  --body-pad-y: 12px;
+  --socket-r: 5px;
+  --junction-w: 38px;
+  --junction-h: 64px;
+  --grid-spacing: 22px;
+}
