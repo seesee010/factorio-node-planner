@@ -119,3 +119,9 @@ export function BadgeBang({ kind = 'error' }) {
     </g>
   `
 }
+
+const MACHINE_ICON_MAP = { furnace: FurnaceIcon, assembler: AssemblerIcon }
+export function getMachineIcon(iconKey, size = 18) {
+  const Icon = MACHINE_ICON_MAP[iconKey] || UnconfiguredIcon
+  return html`<${Icon} size=${size} />`
+}

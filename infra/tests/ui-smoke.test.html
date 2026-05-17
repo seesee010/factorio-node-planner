@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head><title>UI Smoke Tests</title></head>
+<body>
+<div id="out"></div>
+<script type="module">
+import { h, render } from 'https://esm.sh/preact@10'
+import htm from 'https://esm.sh/htm@3'
+const html = htm.bind(h)
+import Toolbar from '../../docs/components/toolbar.js'
+import Sidebar from '../../docs/components/sidebar.js'
+import Inspector from '../../docs/components/inspector.js'
+
+let passed = 0, failed = 0
+
+function test(name, fn) {
+  try {
+    fn()
+    console.log(`✓ ${name}`)
+    passed++
+  } catch(e) {
+    console.error(`✗ ${name}: ${e.message}`)
+    failed++
+  }
+}
+
+const out = document.getElementById('out')
+
+test('Toolbar mounts', () => {
+  const div = document.createElement('div')
+  render(html`<${Toolbar}
+    orientation="left"
+    activeTool="select"
+    setActiveTool=${() => {}}
+    hasSelection=${false}
+    onDelete=${() => {}}
+    onUndo=${() => {}}
+    onRedo=${() => {}}
+    canUndo=${false}
+    canRedo=${false}
+    errorCount=${0}
+    settings=${{ grid: true, snap: false, edgeLabels: true, toolbarSide: 'left' }}
+    setSettings=${() => {}}
+  />`, div)
+  if (!div.querySelector('button')) throw new Error('No buttons rendered')
+})
+
+test('Sidebar mounts', () => {
+  const div = document.createElement('div')
+  render(html`<${Sidebar}
+    selectedNode=${null}
+    errorNodes=${[]}
+    flow=${{ oreIn: 240, platesOut: 180, efficiency: 75 }}
+    sourceOutput=${240}
+    setSourceOutput=${() => {}}
+    scale=${1}
+    onResetView=${() => {}}
+    multiSelectCount=${0}
+  />`, div)
+  if (!div.querySelector('input[type="range"]')) throw new Error('No slider')
+})
+
+test('Inspector mounts', () => {
+  const div = document.createElement('div')
+  const mockNode = { id: 'test', name: 'TEST NODE', type: 'furnace', status: 'ok', inputs: [], outputs: [] }
+  render(html`<${Inspector}
+    node=${mockNode}
+    screenPos=${{ x: 100, y: 100 }}
+    onClose=${() => {}}
+    onUpdateNode=${() => {}}
+    multiCount=${1}
+  />`, div)
+  if (!div.querySelector('button')) throw new Error('No close button')
+})
+
+out.innerHTML = `<pre>${passed} passed, ${failed} failed\n\nOpen browser devtools console for details.</pre>`
+</script>
+</body>
+</html>
