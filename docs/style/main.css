@@ -1,0 +1,105 @@
+/* factorio-flow — Base / Reset Styles
+   Global resets, typography, and element defaults.
+   Requires tokens.css to be loaded first. */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--bg-root);
+  color: var(--text-normal);
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  user-select: none;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ── Custom Range Input (sidebar zoom slider) ────────── */
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  background: transparent;
+  height: 16px;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 2px;
+  background: #2a2a2a;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 14px;
+  background: #c8c8c8;
+  margin-top: -6px;
+  border-radius: 0;
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-track {
+  height: 2px;
+  background: #2a2a2a;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 10px;
+  height: 14px;
+  background: #c8c8c8;
+  border: 0;
+  border-radius: 0;
+  cursor: pointer;
+}
+
+/* ── Base Button Reset ───────────────────────────────── */
+
+button {
+  font-family: inherit;
+  background: transparent;
+  border: 1px solid var(--border-node);
+  color: var(--text-normal);
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  border-radius: 0;
+}
+
+button:hover {
+  border-color: #404040;
+  background: #181818;
+}
+
+button:active {
+  background: #0e0e0e;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  color: var(--text-disabled);
+  border-color: #1e1e1e;
+}
+
+button:disabled:hover {
+  background: transparent;
+  border-color: #1e1e1e;
+}
