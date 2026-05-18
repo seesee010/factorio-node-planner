@@ -10,6 +10,7 @@ import Sidebar   from './components/sidebar.js'
 import Inspector from './components/inspector.js'
 
 import { computeFlow } from './flow/compute.js'
+import { loadGameData } from './flow/loader.js'
 import { makeNode, snapToGrid } from './state.js'
 import { serializeGraph, downloadGraph } from './parsing/save.js'
 import { parseGraph } from './parsing/load.js'
@@ -67,6 +68,8 @@ function App() {
   const [sourceOutput, setSourceOutput] = useState(240)
   const [inspectedId,  setInspectedId]  = useState(null)
   const [inspectorPos, setInspectorPos] = useState({ x: 200, y: 100 })
+  const [gameVersion,  setGameVersion]  = useState('1.1')
+  const [gameData,     setGameData]     = useState(null)
 
   const viewRef      = useRef({ x: 0, y: 0, scale: 1, tick: 0 })
   const [scale, setScale] = useState(1)
@@ -90,6 +93,14 @@ function App() {
       history.replaceState(null, '', window.location.pathname)
     }
   }, [nodes, edges])
+
+  // Load game data when version changes
+  useEffect(() => {
+    setGameData(null)
+    loadGameData(gameVersion)
+      .then(data => setGameData(data))
+      .catch(err => console.error('Failed to load game data:', err))
+  }, [gameVersion])
 
   // computeFlow (memoized)
   const { nodes: rawFlowNodes, edges: flowEdges } = useMemo(
@@ -369,6 +380,9 @@ function App() {
           multiSelectCount=${selectedIds.length}
           nodeCount=${nodes.length}
           edgeCount=${edges.length}
+          gameVersion=${gameVersion}
+          setGameVersion=${setGameVersion}
+          gameDataLoaded=${gameData !== null}
         />
 
         ${inspectedId && html`
@@ -378,6 +392,7 @@ function App() {
             onClose=${handleCloseInspector}
             onUpdateNode=${handleUpdateNode}
             multiCount=${inspectedId === '__multi' ? selectedIds.length : 1}
+            gameData=${gameData}
           />
         `}
       </div>
