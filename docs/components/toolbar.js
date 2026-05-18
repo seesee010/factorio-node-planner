@@ -423,16 +423,16 @@ function SettingsFlyout({ orientation, settings, setSettings, onClose }) {
               style=${{
                 flex: 1,
                 padding: '5px 0',
-                background: settings.toolbarSide === opt.value ? '#191919' : 'transparent',
-                border: `1px solid ${settings.toolbarSide === opt.value ? '#5878c8' : '#262626'}`,
-                color: settings.toolbarSide === opt.value ? '#e6e6e6' : '#7a7a7a',
+                background: settings.toolbarPosition === opt.value ? '#191919' : 'transparent',
+                border: `1px solid ${settings.toolbarPosition === opt.value ? '#5878c8' : '#262626'}`,
+                color: settings.toolbarPosition === opt.value ? '#e6e6e6' : '#7a7a7a',
                 fontFamily: 'JetBrains Mono, monospace',
                 fontSize: 10,
                 textTransform: 'uppercase',
                 letterSpacing: '0.08em',
                 cursor: 'pointer',
               }}
-              onClick=${() => setSettings({ ...settings, toolbarSide: opt.value })}
+              onClick=${() => setSettings({ ...settings, toolbarPosition: opt.value })}
             >${opt.label}</button>
           `)}
         </div>

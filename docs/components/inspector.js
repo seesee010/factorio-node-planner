@@ -16,6 +16,7 @@ const ITEM_LIBRARY = [
 const OBJECT_LIBRARY = [
   { id: 'furnace',   label: 'furnace',   desc: 'smelter · stone', header: '#181408', iconKey: 'furnace' },
   { id: 'assembler', label: 'assembler', desc: 'crafter · 1×',    header: '#12142a', iconKey: 'assembler' },
+  { id: 'output',    label: 'output',    desc: 'sink · endpoint',  header: '#0e1a10', iconKey: 'output' },
 ]
 
 // ---------------------------------------------------------------------------
@@ -53,6 +54,15 @@ export default function Inspector({
         header: '#182210',
         inputs: [],
         outputs: [{ item: entry.id, flowState: 'ok' }],
+      })
+    } else if (entry.id === 'output') {
+      onUpdateNode({
+        name: 'OUTPUT',
+        sublabel: entry.desc,
+        type: 'output',
+        header: entry.header,
+        inputs:  [{ item: null, flowState: 'ok' }],
+        outputs: [],
       })
     } else {
       onUpdateNode({

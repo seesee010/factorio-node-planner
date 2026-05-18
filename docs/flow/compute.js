@@ -317,17 +317,18 @@ export function computeNode(node, inputValues) {
       }
     }
 
+    case 'output':
     case 'target': {
       const throughput = inputValues[0] || 0
       const target = node.amount || 0
 
       let status, issue
-      if (throughput >= target) {
+      if (throughput > 0) {
         status = 'ok'
         issue = null
       } else {
-        status = 'warning'
-        issue = `receiving ${throughput}/m, target ${target}/m`
+        status = 'error'
+        issue = 'no input'
       }
 
       const efficiency = target > 0 ? (throughput / target) * 100 : null
