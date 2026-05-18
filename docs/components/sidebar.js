@@ -65,67 +65,72 @@ function KV({ k, v, vColor }) {
 // Sidebar (default export)
 // ---------------------------------------------------------------------------
 
-const GOAL_ITEMS = [
-  { id: 'iron-plate',    label: 'IRON PLATES',    color: '#687080' },
-  { id: 'copper-plate',  label: 'COPPER PLATES',  color: '#b87333' },
-  { id: 'green-circuit', label: 'GREEN CIRCUITS', color: '#3a7a3a' },
-  { id: 'gear',          label: 'GEARS',          color: '#8a8060' },
-]
-
 function GoalPanel({ flow }) {
-  const [goalIdx, setGoalIdx] = useState(0)
-  const goal = GOAL_ITEMS[goalIdx]
+  const [mode, setMode] = useState('auto')
+  const [customTarget, setCustomTarget] = useState(300)
+
+  const actual = flow.platesOut
+  const efficiency = mode === 'auto'
+    ? flow.efficiency
+    : (customTarget > 0 ? Math.round((actual / customTarget) * 100) : 0)
+  const effColor = efficiency >= 100 ? '#3a9c3a' : efficiency > 0 ? '#cc6820' : '#4a4a4a'
+
   return html`
-    <div style=${{
-      borderBottom: '1px solid #1e1e1e',
-      padding: '12px 14px',
-    }}>
-      <div style=${{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 8,
-      }}>
+    <div style=${{ borderBottom: '1px solid #1e1e1e', padding: '12px 14px' }}>
+      <div style=${{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
         <span style=${{
           fontFamily: 'JetBrains Mono, monospace',
-          fontSize: 10,
-          color: '#383838',
-          textTransform: 'uppercase',
-          letterSpacing: '0.12em',
+          fontSize: 10, color: '#383838',
+          textTransform: 'uppercase', letterSpacing: '0.12em',
         }}>Goal</span>
-        <div style=${{ display: 'flex', gap: 3 }}>
-          ${GOAL_ITEMS.map((item, i) => html`
-            <div
-              key=${item.id}
-              onClick=${() => setGoalIdx(i)}
-              style=${{
-                width: 8, height: 8,
-                background: i === goalIdx ? item.color : '#2a2a2a',
-                cursor: 'pointer',
-              }}
-            />
+        <div style=${{ display: 'flex', gap: 2 }}>
+          ${['auto', 'custom'].map(m => html`
+            <button key=${m} onClick=${() => setMode(m)} style=${{
+              padding: '2px 8px',
+              background: mode === m ? '#191919' : 'transparent',
+              border: `1px solid ${mode === m ? '#5878c8' : '#262626'}`,
+              color: mode === m ? '#c8c8c8' : '#4a4a4a',
+              fontFamily: 'JetBrains Mono, monospace',
+              fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.08em',
+              cursor: 'pointer',
+            }}>${m}</button>
           `)}
         </div>
       </div>
+
+      ${mode === 'custom' && html`
+        <div style=${{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+          <span style=${{
+            fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#6a6a6a',
+          }}>target</span>
+          <input
+            type="number" min="1" value=${customTarget}
+            onInput=${(e) => setCustomTarget(Math.max(1, Number(e.target.value) || 1))}
+            style=${{
+              width: 64, background: '#0c0c0c',
+              border: '1px solid #2a2a2a', outline: 'none',
+              color: '#e6e6e6', fontFamily: 'JetBrains Mono, monospace',
+              fontSize: 11, padding: '3px 6px',
+            }}
+          />
+          <span style=${{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#4a4a4a' }}>/min</span>
+        </div>
+      `}
+
       <div style=${{
-        fontFamily: 'JetBrains Mono, monospace',
-        fontSize: 11,
-        color: goal.color,
-        letterSpacing: '0.06em',
-        marginBottom: 2,
-      }}>${goal.label}</div>
+        fontFamily: 'JetBrains Mono, monospace', fontSize: 20,
+        color: '#e6e6e6', lineHeight: 1.1,
+      }}>
+        ${actual}
+        ${mode === 'custom'
+          ? html`<span style=${{ fontSize: 10, color: '#4a4a4a', marginLeft: 4 }}> / ${customTarget} /min</span>`
+          : html`<span style=${{ fontSize: 10, color: '#4a4a4a', marginLeft: 4 }}>/min</span>`
+        }
+      </div>
       <div style=${{
-        fontFamily: 'JetBrains Mono, monospace',
-        fontSize: 18,
-        color: '#e6e6e6',
-        lineHeight: 1.1,
-      }}>${flow.platesOut}<span style=${{ fontSize: 10, color: '#4a4a4a', marginLeft: 4 }}>/min</span></div>
-      <div style=${{
-        fontFamily: 'JetBrains Mono, monospace',
-        fontSize: 9.5,
-        color: '#4a4a4a',
-        marginTop: 3,
-      }}>efficiency ${flow.efficiency}%</div>
+        fontFamily: 'JetBrains Mono, monospace', fontSize: 9.5,
+        color: effColor, marginTop: 4,
+      }}>efficiency ${efficiency}%</div>
     </div>
   `
 }
