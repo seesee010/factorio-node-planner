@@ -1,5 +1,3 @@
-import { RECIPES, findRecipe } from './recipes.js'
-
 // Main entry point
 // nodes: Node[] — with .id, .kind, .type, .parents, .children, .inputs, .outputs, .throughput (for source nodes)
 // edges: Edge[] — with .id, .from {nodeId, socket}, .to {nodeId, socket}

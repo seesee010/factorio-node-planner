@@ -1,7 +1,14 @@
 export async function loadGameData(version) {
-  const response = await fetch(`./data/factorio-${version}.json`)
+  const response = await fetch(`./flow/data/factorio-${version}.json`)
   const raw = await response.json()
   return transformData(raw, version)
+}
+
+function entityTypeFromId(id) {
+  if (id.endsWith('-furnace')) return 'furnace'
+  if (id.startsWith('assembling-machine-')) return 'assembling-machine'
+  if (id === 'chemical-plant' || id === 'oil-refinery' || id === 'centrifuge') return 'assembling-machine'
+  return null
 }
 
 function transformData(raw, version) {
@@ -10,6 +17,7 @@ function transformData(raw, version) {
 
   for (const item of raw.items || []) {
     if (item.machine) {
+      const entityType = entityTypeFromId(item.id)
       machines.push({
         id: item.id,
         label: item.name || item.id,
@@ -19,6 +27,7 @@ function transformData(raw, version) {
         modules: item.machine.modules || 0,
         categories: item.category ? [item.category] : [],
         size: item.machine.size || [2, 2],
+        entityType,
       })
     } else {
       sourceItems.push({

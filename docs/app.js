@@ -104,8 +104,8 @@ function App() {
 
   // computeFlow (memoized)
   const { nodes: rawFlowNodes, edges: flowEdges } = useMemo(
-    () => computeFlow(nodes, edges),
-    [nodes, edges]
+    () => computeFlow(nodes, edges, gameData),
+    [nodes, edges, gameData]
   )
 
   // Mark unconnected sockets as idle (gray)
