@@ -40,8 +40,7 @@ const DEFAULT_ITEM_COLOR = '#5a5a5a'
 
 function buildItemLibrary(gameData) {
   if (!gameData || !Array.isArray(gameData.sourceItems)) return FALLBACK_ITEM_LIBRARY
-  const items = gameData.sourceItems.slice(0, 12)
-  return items.map(item => ({
+  return gameData.sourceItems.map(item => ({
     id:    item.id,
     label: item.label,
     desc:  'raw material · source',
