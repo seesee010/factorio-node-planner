@@ -1,5 +1,5 @@
 import { h, Fragment } from 'https://esm.sh/preact@10'
-import { useState, useEffect } from 'https://esm.sh/preact@10/hooks'
+import { useState, useEffect, useRef } from 'https://esm.sh/preact@10/hooks'
 import htm from 'https://esm.sh/htm@3'
 const html = htm.bind(h)
 import { getMachineIcon } from '../icons.js'
@@ -97,21 +97,32 @@ export default function Inspector({
 }) {
   const [activeTab, setActiveTab] = useState('items')
   const [closeHover, setCloseHover] = useState(false)
+  const [search, setSearch] = useState('')
+  const searchRef = useRef(null)
 
   const itemLibrary   = buildItemLibrary(gameData)
   const objectLibrary = buildObjectLibrary(gameData)
+
+  const searchLower = search.toLowerCase()
+  const filteredItems   = search ? itemLibrary.filter(e => e.label.toLowerCase().includes(searchLower) || e.desc.toLowerCase().includes(searchLower)) : itemLibrary
+  const filteredObjects = search ? objectLibrary.filter(e => e.label.toLowerCase().includes(searchLower) || e.desc.toLowerCase().includes(searchLower)) : objectLibrary
+
+  useEffect(() => {
+    if (searchRef.current) searchRef.current.focus()
+  }, [])
 
   // ESC key handler
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') {
         e.preventDefault()
+        if (search) { setSearch(''); return }
         onClose()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  }, [onClose, search])
 
   function applyPreset(entry) {
     if (entry.kind === 'item') {
@@ -224,6 +235,29 @@ export default function Inspector({
         >×</button>
       </div>
 
+      <!-- Search -->
+      <div style=${{ borderBottom: '1px solid #1e1e1e' }}>
+        <input
+          ref=${searchRef}
+          type="text"
+          placeholder="search..."
+          value=${search}
+          onInput=${(e) => setSearch(e.target.value)}
+          style=${{
+            width: '100%',
+            boxSizing: 'border-box',
+            padding: '8px 12px',
+            background: '#0c0c0c',
+            border: 'none',
+            outline: 'none',
+            color: '#e6e6e6',
+            fontFamily: 'JetBrains Mono, monospace',
+            fontSize: 11,
+            letterSpacing: '0.04em',
+          }}
+        />
+      </div>
+
       <!-- Tabs -->
       <div style=${{
         background: '#0c0c0c',
@@ -270,16 +304,18 @@ export default function Inspector({
         display: 'flex',
         flexDirection: 'column',
         gap: 4,
+        maxHeight: 280,
+        overflowY: 'auto',
       }}>
         ${activeTab === 'items'
-          ? itemLibrary.map(entry => html`
+          ? filteredItems.map(entry => html`
             <${ItemCard}
               key=${entry.id}
               entry=${{ ...entry, kind: 'item' }}
               onApply=${applyPreset}
             />
           `)
-          : objectLibrary.map(entry => html`
+          : filteredObjects.map(entry => html`
             <${ObjectCard}
               key=${entry.id}
               entry=${{ ...entry, kind: 'object' }}

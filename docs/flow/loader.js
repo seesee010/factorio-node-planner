@@ -29,10 +29,11 @@ function transformData(raw, version) {
         size: item.machine.size || [2, 2],
         entityType,
       })
-    } else {
+    } else if (item.category === 'intermediate-products' || item.category === 'fluids') {
       sourceItems.push({
         id: item.id,
         label: item.name || item.id,
+        category: item.category,
       })
     }
   }
