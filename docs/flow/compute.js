@@ -4,7 +4,7 @@ import { RECIPES, findRecipe } from './recipes.js'
 // nodes: Node[] — with .id, .kind, .type, .parents, .children, .inputs, .outputs, .throughput (for source nodes)
 // edges: Edge[] — with .id, .from {nodeId, socket}, .to {nodeId, socket}
 // Returns: { nodes: Node[], edges: Edge[] } — deep copies with flow state filled in
-export function computeFlow(nodes, edges) {
+export function computeFlow(nodes, edges, gameData = null) {
   // 1. Deep-copy all nodes and edges
   const nodesCopy = JSON.parse(JSON.stringify(nodes))
   const edgesCopy = JSON.parse(JSON.stringify(edges))
@@ -50,7 +50,7 @@ export function computeFlow(nodes, edges) {
     }
 
     // Call computeNode
-    const result = computeNode(node, inputValues)
+    const result = computeNode(node, inputValues, gameData)
 
     // Store outputValues
     outputMap[nodeId] = result.outputValues
@@ -186,8 +186,9 @@ export function topoSort(nodes, edges) {
 // Compute throughput for one node given its resolved input values
 // node: Node
 // inputValues: number[] — throughput value arriving at each input socket
+// gameData: optional — { recipes: {...} } from FactorioLab; if null, uses node fields directly
 // Returns: { throughput: number, efficiency: number|null, status: string, issue: string|null, outputValues: number[], socketStates: { inputs: string[], outputs: string[] } }
-export function computeNode(node, inputValues) {
+export function computeNode(node, inputValues, gameData = null) {
   const inputCount = node.inputs ? node.inputs.length : 0
   const outputCount = node.outputs ? node.outputs.length : 0
 
@@ -207,30 +208,39 @@ export function computeNode(node, inputValues) {
       }
     }
 
-    case 'furnace': {
+    case 'furnace':
+    case 'assembler': {
       const inputVal = inputValues[0] || 0
-      const inputItem = node.inputs && node.inputs[0] ? node.inputs[0].item : null
-      const outputItem = node.outputs && node.outputs[0] ? node.outputs[0].item : null
 
-      // Validate recipe
-      if (inputItem && outputItem) {
-        const recipe = findRecipe(inputItem, outputItem, 'furnace') ||
-                       findRecipe(inputItem, outputItem)
-        if (!recipe) {
-          return {
-            throughput: 0,
-            efficiency: null,
-            status: 'error',
-            issue: `invalid recipe: ${inputItem} → ${outputItem}`,
-            outputValues: [0],
-            socketStates: {
-              inputs: ['error'],
-              outputs: ['error'],
-            },
-          }
+      // Machine speed + recipe time capacity model
+      if (node.machineSpeed && node.recipeTime) {
+        const count = node.machineCount || 1
+        const outputAmt = node.recipeOutputAmount || 1
+        const maxOutput = (60 / node.recipeTime) * node.machineSpeed * count * outputAmt
+        const actual = Math.min(inputVal, maxOutput)
+        const eff = maxOutput > 0 ? (actual / maxOutput) * 100 : null
+
+        let status = 'ok', issue = null
+        if (inputVal === 0) {
+          status = 'error'; issue = 'no input'
+        } else if (actual < inputVal * 0.99) {
+          status = 'warning'; issue = `bottleneck: max ${Math.round(maxOutput)}/m`
+        }
+
+        return {
+          throughput: actual,
+          efficiency: eff,
+          status,
+          issue,
+          outputValues: [actual],
+          socketStates: {
+            inputs: [inputVal > 0 ? 'ok' : 'error'],
+            outputs: [actual > 0 ? 'ok' : 'idle'],
+          },
         }
       }
 
+      // Fallback: passthrough (old behavior)
       if (inputVal === 0) {
         return {
           throughput: 0,
