@@ -13,10 +13,10 @@ const FALLBACK_ITEM_LIBRARY = [
   { id: 'copper-ore', label: 'copper ore', desc: 'raw material · ore', color: '#8B4513' },
 ]
 
-const OBJECT_LIBRARY = [
-  { id: 'furnace',   label: 'furnace',   desc: 'smelter · stone', header: '#181408', iconKey: 'furnace' },
-  { id: 'assembler', label: 'assembler', desc: 'crafter · 1×',    header: '#12142a', iconKey: 'assembler' },
-  { id: 'output',    label: 'output',    desc: 'sink · endpoint',  header: '#0e1a10', iconKey: 'output' },
+const FALLBACK_OBJECT_LIBRARY = [
+  { id: 'furnace',   label: 'furnace',   desc: 'smelter · stone · 1×', header: '#181408', iconKey: 'furnace' },
+  { id: 'assembler', label: 'assembler', desc: 'crafter · 1×',          header: '#12142a', iconKey: 'assembler' },
+  { id: 'output',    label: 'output',    desc: 'sink · endpoint',        header: '#0e1a10', iconKey: 'output' },
 ]
 
 // ---------------------------------------------------------------------------
@@ -50,6 +50,40 @@ function buildItemLibrary(gameData) {
 }
 
 // ---------------------------------------------------------------------------
+// Build object library dynamically from gameData
+// ---------------------------------------------------------------------------
+
+function buildObjectLibrary(gameData) {
+  if (!gameData || !Array.isArray(gameData.machines)) return FALLBACK_OBJECT_LIBRARY
+
+  const relevant = gameData.machines
+    .filter(m => m.entityType === 'furnace' || m.entityType === 'assembling-machine')
+    .sort((a, b) => a.speed - b.speed)
+    .slice(0, 8)
+    .map(m => ({
+      id:          m.id,
+      label:       m.label,
+      desc:        `${m.entityType === 'furnace' ? 'smelter' : 'crafter'} · ${m.speed}×`,
+      header:      m.entityType === 'furnace' ? '#181408' : '#12142a',
+      iconKey:     m.entityType === 'furnace' ? 'furnace' : 'assembler',
+      entityType:  m.entityType,
+      speed:       m.speed,
+      energyUsage: m.energyUsage,
+      machineId:   m.id,
+    }))
+
+  relevant.push({
+    id:      'output',
+    label:   'output',
+    desc:    'sink · endpoint',
+    header:  '#0e1a10',
+    iconKey: 'output',
+  })
+
+  return relevant
+}
+
+// ---------------------------------------------------------------------------
 // Inspector (default export)
 // ---------------------------------------------------------------------------
 
@@ -64,7 +98,8 @@ export default function Inspector({
   const [activeTab, setActiveTab] = useState('items')
   const [closeHover, setCloseHover] = useState(false)
 
-  const itemLibrary = buildItemLibrary(gameData)
+  const itemLibrary   = buildItemLibrary(gameData)
+  const objectLibrary = buildObjectLibrary(gameData)
 
   // ESC key handler
   useEffect(() => {
@@ -98,14 +133,17 @@ export default function Inspector({
         outputs: [],
       })
     } else {
-      onUpdateNode({
-        name: entry.label.toUpperCase(),
-        sublabel: entry.desc,
-        type: entry.id,
-        header: entry.header,
-        inputs:  [{ item: null, flowState: 'ok' }],
-        outputs: [{ item: null, flowState: 'ok' }],
-      })
+      const patch = {
+        name:     entry.label.toUpperCase(),
+        sublabel: `${entry.speed}× · ${entry.energyUsage}kW`,
+        type:     entry.entityType === 'furnace' ? 'furnace' : 'assembler',
+        header:   entry.entityType === 'furnace' ? '#181408' : '#12142a',
+        inputs:   [{ item: null, flowState: 'ok' }],
+        outputs:  [{ item: null, flowState: 'ok' }],
+      }
+      if (entry.machineId)       patch.machineId    = entry.machineId
+      if (entry.speed != null)   patch.machineSpeed = entry.speed
+      onUpdateNode(patch)
     }
   }
 
@@ -241,7 +279,7 @@ export default function Inspector({
               onApply=${applyPreset}
             />
           `)
-          : OBJECT_LIBRARY.map(entry => html`
+          : objectLibrary.map(entry => html`
             <${ObjectCard}
               key=${entry.id}
               entry=${{ ...entry, kind: 'object' }}
