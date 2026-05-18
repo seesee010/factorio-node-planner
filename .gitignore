@@ -136,6 +136,7 @@ $RECYCLE.BIN/
 *.db-shm
 *.db-wal
 data/
+!docs/flow/data/
 tmp/
 temp/
 
