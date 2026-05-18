@@ -5,10 +5,10 @@ const html = htm.bind(h)
 import { getMachineIcon } from '../icons.js'
 
 // ---------------------------------------------------------------------------
-// Item / Object library (v0.1 hardcoded)
+// Item / Object library — fallback (hardcoded) used when gameData === null
 // ---------------------------------------------------------------------------
 
-const ITEM_LIBRARY = [
+const FALLBACK_ITEM_LIBRARY = [
   { id: 'iron-ore',   label: 'iron ore',   desc: 'raw material · ore', color: '#a85e24' },
   { id: 'copper-ore', label: 'copper ore', desc: 'raw material · ore', color: '#8B4513' },
 ]
@@ -20,6 +20,36 @@ const OBJECT_LIBRARY = [
 ]
 
 // ---------------------------------------------------------------------------
+// Color map for known source items
+// ---------------------------------------------------------------------------
+
+const ITEM_COLORS = {
+  'iron-ore':    '#a85e24',
+  'copper-ore':  '#8B4513',
+  'coal':        '#2a2a2a',
+  'stone':       '#8a7a60',
+  'wood':        '#6b4226',
+  'uranium-ore': '#4a7a20',
+  'raw-fish':    '#1a5a7a',
+}
+const DEFAULT_ITEM_COLOR = '#5a5a5a'
+
+// ---------------------------------------------------------------------------
+// Build item library dynamically from gameData
+// ---------------------------------------------------------------------------
+
+function buildItemLibrary(gameData) {
+  if (!gameData || !Array.isArray(gameData.sourceItems)) return FALLBACK_ITEM_LIBRARY
+  const items = gameData.sourceItems.slice(0, 12)
+  return items.map(item => ({
+    id:    item.id,
+    label: item.label,
+    desc:  'raw material · source',
+    color: ITEM_COLORS[item.id] || DEFAULT_ITEM_COLOR,
+  }))
+}
+
+// ---------------------------------------------------------------------------
 // Inspector (default export)
 // ---------------------------------------------------------------------------
 
@@ -29,9 +59,12 @@ export default function Inspector({
   onClose,
   onUpdateNode,
   multiCount = 1,
+  gameData = null,
 }) {
   const [activeTab, setActiveTab] = useState('items')
   const [closeHover, setCloseHover] = useState(false)
+
+  const itemLibrary = buildItemLibrary(gameData)
 
   // ESC key handler
   useEffect(() => {
@@ -201,7 +234,7 @@ export default function Inspector({
         gap: 4,
       }}>
         ${activeTab === 'items'
-          ? ITEM_LIBRARY.map(entry => html`
+          ? itemLibrary.map(entry => html`
             <${ItemCard}
               key=${entry.id}
               entry=${{ ...entry, kind: 'item' }}
