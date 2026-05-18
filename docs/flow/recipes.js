@@ -1,85 +1,34 @@
-// Factorio base-game recipe database
-// keyed by recipe ID
-
-export const RECIPES = {
-  "iron-smelting": {
-    input: "iron-ore",
-    output: "iron-plate",
-    machines: ["furnace", "electric-furnace", "stone-furnace"],
-    time: 3.2,
-    inputCount: 1,
-    outputCount: 1,
-  },
-  "copper-smelting": {
-    input: "copper-ore",
-    output: "copper-plate",
-    machines: ["furnace", "electric-furnace", "stone-furnace"],
-    time: 3.2,
-    inputCount: 1,
-    outputCount: 1,
-  },
-  "steel-smelting": {
-    input: "iron-plate",
-    output: "steel-plate",
-    machines: ["furnace", "electric-furnace", "stone-furnace"],
-    time: 16,
-    inputCount: 5,
-    outputCount: 1,
-  },
-  "iron-gear-wheel": {
-    input: "iron-plate",
-    output: "gear",
-    machines: ["assembler"],
-    time: 0.5,
-    inputCount: 2,
-    outputCount: 1,
-  },
-  "copper-cable": {
-    input: "copper-plate",
-    output: "copper-cable",
-    machines: ["assembler"],
-    time: 0.5,
-    inputCount: 1,
-    outputCount: 2,
-  },
-  "green-circuit": {
-    input: "iron-plate",
-    output: "green-circuit",
-    machines: ["assembler"],
-    time: 0.5,
-    inputCount: 1,
-    outputCount: 1,
-  },
-  "stone-brick": {
-    input: "stone",
-    output: "stone-brick",
-    machines: ["furnace", "electric-furnace", "stone-furnace"],
-    time: 3.2,
-    inputCount: 2,
-    outputCount: 1,
-  },
+export function findRecipe(gameData, inputItem, outputItem) {
+  if (!gameData) return findRecipeFallback(inputItem, outputItem)
+  return gameData.recipes.find(r => {
+    const hasInput  = inputItem  ? (inputItem  in r.in)  : true
+    const hasOutput = outputItem ? (outputItem in r.out) : true
+    return hasInput && hasOutput
+  }) || null
 }
 
-// Returns the recipe entry for a given (inputItem, outputItem, machineType) combo, or null
-// machineType is optional — if omitted, matches any machine
-export function findRecipe(inputItem, outputItem, machineType) {
-  for (const recipe of Object.values(RECIPES)) {
-    if (recipe.input !== inputItem) continue
-    if (recipe.output !== outputItem) continue
-    if (machineType !== undefined && !recipe.machines.includes(machineType)) continue
-    return recipe
-  }
-  return null
+export function getRecipesForMachine(gameData, machineId) {
+  if (!gameData) return []
+  const machine = gameData.machines.find(m => m.id === machineId)
+  if (!machine) return []
+  return gameData.recipes.filter(r => r.producers.includes(machineId))
 }
 
-// Returns all possible output items for a given (inputItem, machineType) combo
-// Returns: string[] of output item keys
-export function possibleOutputs(inputItem, machineType) {
-  const outputs = []
-  for (const recipe of Object.values(RECIPES)) {
-    if (recipe.input !== inputItem) continue
-    if (machineType !== undefined && !recipe.machines.includes(machineType)) continue
-    outputs.push(recipe.output)
-  }
-  return outputs
+export function getMachineById(gameData, machineId) {
+  if (!gameData) return null
+  return gameData.machines.find(m => m.id === machineId) || null
+}
+
+const FALLBACK_RECIPES = [
+  { id: 'iron-plate',      time: 3.2, category: 'smelting',  in: { 'iron-ore': 1 },    out: { 'iron-plate': 1 },      producers: ['stone-furnace', 'steel-furnace', 'electric-furnace'] },
+  { id: 'copper-plate',    time: 3.2, category: 'smelting',  in: { 'copper-ore': 1 },  out: { 'copper-plate': 1 },    producers: ['stone-furnace', 'steel-furnace', 'electric-furnace'] },
+  { id: 'iron-gear-wheel', time: 0.5, category: 'crafting',  in: { 'iron-plate': 2 },  out: { 'iron-gear-wheel': 1 }, producers: ['assembling-machine-1', 'assembling-machine-2', 'assembling-machine-3'] },
+]
+
+function findRecipeFallback(inputItem, outputItem) {
+  return FALLBACK_RECIPES.find(r => {
+    const hasInput  = inputItem  ? (inputItem  in r.in)  : true
+    const hasOutput = outputItem ? (outputItem in r.out) : true
+    return hasInput && hasOutput
+  }) || null
 }
