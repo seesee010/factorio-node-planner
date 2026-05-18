@@ -65,15 +65,19 @@ function KV({ k, v, vColor }) {
 // Sidebar (default export)
 // ---------------------------------------------------------------------------
 
-function GoalPanel({ flow }) {
+function GoalPanel({ flow, gameData }) {
   const [mode, setMode] = useState('auto')
-  const [customTarget, setCustomTarget] = useState(300)
+  const [customItemId, setCustomItemId] = useState('')
 
-  const actual = flow.platesOut
-  const efficiency = mode === 'auto'
-    ? flow.efficiency
-    : (customTarget > 0 ? Math.round((actual / customTarget) * 100) : 0)
-  const effColor = efficiency >= 100 ? '#3a9c3a' : efficiency > 0 ? '#cc6820' : '#4a4a4a'
+  const items = gameData?.sourceItems || []
+
+  const activeItemId = mode === 'auto'
+    ? (flow.outputItem || null)
+    : (customItemId || items[0]?.id || null)
+  const activeItem = items.find(i => i.id === activeItemId)
+  const itemLabel = activeItem?.label || activeItemId || '—'
+
+  const effColor = flow.efficiency >= 100 ? '#3a9c3a' : flow.efficiency > 0 ? '#cc6820' : '#4a4a4a'
 
   return html`
     <div style=${{ borderBottom: '1px solid #1e1e1e', padding: '12px 14px' }}>
@@ -98,39 +102,43 @@ function GoalPanel({ flow }) {
         </div>
       </div>
 
-      ${mode === 'custom' && html`
-        <div style=${{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-          <span style=${{
-            fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#6a6a6a',
-          }}>target</span>
-          <input
-            type="number" min="1" value=${customTarget}
-            onInput=${(e) => setCustomTarget(Math.max(1, Number(e.target.value) || 1))}
+      ${mode === 'custom'
+        ? html`
+          <select
+            value=${activeItemId || ''}
+            onChange=${(e) => setCustomItemId(e.target.value)}
             style=${{
-              width: 64, background: '#0c0c0c',
-              border: '1px solid #2a2a2a', outline: 'none',
-              color: '#e6e6e6', fontFamily: 'JetBrains Mono, monospace',
-              fontSize: 11, padding: '3px 6px',
+              width: '100%', marginBottom: 8,
+              background: '#0c0c0c', border: '1px solid #2a2a2a',
+              color: '#c8c8c8', fontFamily: 'JetBrains Mono, monospace',
+              fontSize: 10, padding: '5px 6px', outline: 'none', cursor: 'pointer',
             }}
-          />
-          <span style=${{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#4a4a4a' }}>/min</span>
-        </div>
-      `}
+          >
+            ${items.map(item => html`
+              <option key=${item.id} value=${item.id}>${item.label}</option>
+            `)}
+          </select>
+        `
+        : html`
+          <div style=${{
+            fontFamily: 'JetBrains Mono, monospace', fontSize: 10.5,
+            color: '#6a6a6a', letterSpacing: '0.06em', marginBottom: 6,
+            textTransform: 'uppercase',
+          }}>${itemLabel}</div>
+        `
+      }
 
       <div style=${{
         fontFamily: 'JetBrains Mono, monospace', fontSize: 20,
         color: '#e6e6e6', lineHeight: 1.1,
       }}>
-        ${actual}
-        ${mode === 'custom'
-          ? html`<span style=${{ fontSize: 10, color: '#4a4a4a', marginLeft: 4 }}> / ${customTarget} /min</span>`
-          : html`<span style=${{ fontSize: 10, color: '#4a4a4a', marginLeft: 4 }}>/min</span>`
-        }
+        ${flow.platesOut}
+        <span style=${{ fontSize: 10, color: '#4a4a4a', marginLeft: 4 }}>/min</span>
       </div>
       <div style=${{
         fontFamily: 'JetBrains Mono, monospace', fontSize: 9.5,
         color: effColor, marginTop: 4,
-      }}>efficiency ${efficiency}%</div>
+      }}>efficiency ${flow.efficiency}%</div>
     </div>
   `
 }
@@ -152,6 +160,7 @@ export default function Sidebar({
   gameVersion,
   setGameVersion,
   gameDataLoaded,
+  gameData = null,
 }) {
   const [width, setWidth] = useState(220)
   const dragRef = useRef(null)
@@ -219,7 +228,7 @@ export default function Sidebar({
       <div style=${{ flex: 1, overflowY: 'auto' }}>
 
         <!-- Goal item panel -->
-        <${GoalPanel} flow=${flow} />
+        <${GoalPanel} flow=${flow} gameData=${gameData} />
 
         <!-- Dataset / DLC toggle -->
         <${Section} title="Dataset">

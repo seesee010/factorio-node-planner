@@ -144,7 +144,8 @@ function App() {
       ? (flowEdges.find(e => e.to.nodeId === outNode.id)?.value || 0)
       : 0
     const efficiency = oreIn > 0 ? Math.round((platesOut / oreIn) * 100) : 0
-    return { oreIn, platesOut, efficiency }
+    const outputItem = srcNode?.outputs?.[0]?.item || null
+    return { oreIn, platesOut, efficiency, outputItem }
   }, [flowNodes, flowEdges, sourceOutput])
 
   const inspectedNode = useMemo(
@@ -383,6 +384,7 @@ function App() {
           gameVersion=${gameVersion}
           setGameVersion=${setGameVersion}
           gameDataLoaded=${gameData !== null}
+          gameData=${gameData}
         />
 
         ${inspectedId && html`
