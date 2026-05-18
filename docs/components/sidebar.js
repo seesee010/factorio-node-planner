@@ -144,6 +144,9 @@ export default function Sidebar({
   multiSelectCount = 0,
   nodeCount = 0,
   edgeCount = 0,
+  gameVersion,
+  setGameVersion,
+  gameDataLoaded,
 }) {
   const [width, setWidth] = useState(220)
   const dragRef = useRef(null)
@@ -212,6 +215,37 @@ export default function Sidebar({
 
         <!-- Goal item panel -->
         <${GoalPanel} flow=${flow} />
+
+        <!-- Dataset / DLC toggle -->
+        <${Section} title="Dataset">
+          <div style=${{ display:'flex', gap:4 }}>
+            ${['1.1','2.0'].map(v => html`
+              <button
+                key=${v}
+                onClick=${() => setGameVersion(v)}
+                style=${{
+                  flex: 1,
+                  padding: '6px 0',
+                  background: gameVersion === v ? '#191919' : 'transparent',
+                  border: `1px solid ${gameVersion === v ? '#5878c8' : '#262626'}`,
+                  color: gameVersion === v ? '#e6e6e6' : '#6a6a6a',
+                  fontFamily: 'JetBrains Mono, monospace',
+                  fontSize: 10,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                  cursor: 'pointer',
+                }}
+              >${v === '1.1' ? 'Vanilla 1.1' : 'Space Age'}</button>
+            `)}
+          </div>
+          <div style=${{
+            fontFamily: 'JetBrains Mono, monospace',
+            fontSize: 9,
+            color: gameDataLoaded ? '#3a9c3a' : '#4a4a4a',
+            marginTop: 5,
+            letterSpacing: '0.08em',
+          }}>${gameDataLoaded ? 'data loaded' : 'loading...'}</div>
+        </${Section}>
 
         <!-- Source output section -->
         <${Section} title="Source output">
