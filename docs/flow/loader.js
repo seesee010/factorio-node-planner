@@ -7,8 +7,12 @@ export async function loadGameData(version) {
 function entityTypeFromId(id) {
   if (id.endsWith('-furnace')) return 'furnace'
   if (id.startsWith('assembling-machine-')) return 'assembling-machine'
-  if (id === 'chemical-plant' || id === 'oil-refinery' || id === 'centrifuge') return 'assembling-machine'
-  return null
+  if (id === 'chemical-plant' || id === 'oil-refinery' || id === 'centrifuge' || id === 'rocket-silo') return 'assembling-machine'
+  if (id === 'burner-mining-drill' || id === 'electric-mining-drill') return 'mining-drill'
+  if (id === 'offshore-pump' || id === 'pumpjack') return 'pump'
+  if (id === 'boiler' || id === 'heat-exchanger' || id === 'nuclear-reactor') return 'boiler'
+  if (id === 'lab') return 'lab'
+  return 'assembling-machine'
 }
 
 function transformData(raw, version) {

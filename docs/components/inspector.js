@@ -56,21 +56,36 @@ function buildItemLibrary(gameData) {
 function buildObjectLibrary(gameData) {
   if (!gameData || !Array.isArray(gameData.machines)) return FALLBACK_OBJECT_LIBRARY
 
+  const TYPE_META = {
+    'furnace':         { label: 'smelter',       header: '#181408', iconKey: 'furnace' },
+    'assembling-machine': { label: 'crafter',    header: '#12142a', iconKey: 'assembler' },
+    'mining-drill':    { label: 'drill',          header: '#1a1408', iconKey: 'assembler' },
+    'pump':            { label: 'pump',           header: '#0e1420', iconKey: 'assembler' },
+    'boiler':          { label: 'boiler',         header: '#1a0e0e', iconKey: 'furnace' },
+    'lab':             { label: 'lab',            header: '#0e1a14', iconKey: 'assembler' },
+  }
+
   const relevant = gameData.machines
-    .filter(m => m.entityType === 'furnace' || m.entityType === 'assembling-machine')
-    .sort((a, b) => a.speed - b.speed)
-    .slice(0, 8)
-    .map(m => ({
-      id:          m.id,
-      label:       m.label,
-      desc:        `${m.entityType === 'furnace' ? 'smelter' : 'crafter'} · ${m.speed}×`,
-      header:      m.entityType === 'furnace' ? '#181408' : '#12142a',
-      iconKey:     m.entityType === 'furnace' ? 'furnace' : 'assembler',
-      entityType:  m.entityType,
-      speed:       m.speed,
-      energyUsage: m.energyUsage,
-      machineId:   m.id,
-    }))
+    .sort((a, b) => {
+      const order = ['furnace', 'assembling-machine', 'mining-drill', 'pump', 'boiler', 'lab']
+      const ai = order.indexOf(a.entityType ?? ''), bi = order.indexOf(b.entityType ?? '')
+      if (ai !== bi) return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
+      return a.speed - b.speed
+    })
+    .map(m => {
+      const meta = TYPE_META[m.entityType] || { label: 'machine', header: '#12142a', iconKey: 'assembler' }
+      return {
+        id:          m.id,
+        label:       m.label,
+        desc:        `${meta.label} · ${m.speed}×`,
+        header:      meta.header,
+        iconKey:     meta.iconKey,
+        entityType:  m.entityType,
+        speed:       m.speed,
+        energyUsage: m.energyUsage,
+        machineId:   m.id,
+      }
+    })
 
   relevant.push({
     id:      'output',
